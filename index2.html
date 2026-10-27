@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Drive the difference | Car enquiry</title>
+  <style>
+    :root { --ink: #17232d; --muted: #65727c; --accent: #d91f2b; --line: #dce2e6; --paper: #fff; --soft: #f4f6f7; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #edf0f2; color: var(--ink); font-family: Arial, Helvetica, sans-serif; }
+    .page { width: min(1080px, calc(100% - 32px)); margin: 36px auto; background: var(--paper); box-shadow: 0 18px 55px #14212c1a; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; padding: 18px 6%; border-bottom: 1px solid var(--line); }
+    .brand { font-size: 20px; font-weight: 800; letter-spacing: .08em; }
+    .brand span { color: var(--accent); }
+    .topbar small { color: var(--muted); }
+    .hero { display: grid; grid-template-columns: 1fr 1fr; min-height: 355px; }
+    .visual { position: relative; min-height: 355px; overflow: hidden; background: #263640; }
+    .visual img { width: 100%; height: 100%; min-height: 355px; display: block; object-fit: cover; transition: opacity .25s ease; }
+    .visual:after { content: ""; position: absolute; inset: 45% 0 0; background: linear-gradient(transparent, #101820b8); pointer-events: none; }
+    .slide-caption { position: absolute; z-index: 1; left: 28px; bottom: 26px; color: white; }
+    .slide-caption strong { display: block; font-size: 25px; margin-bottom: 5px; }
+    .slide-caption span { font-size: 13px; opacity: .9; }
+    .carousel-btn { position: absolute; z-index: 2; top: 50%; transform: translateY(-50%); width: 42px; height: 42px; border: 0; border-radius: 50%; background: #ffffffdf; color: var(--ink); font-size: 24px; cursor: pointer; }
+    .carousel-btn:hover { background: white; }
+    #prev { left: 14px; } #next { right: 14px; }
+    .dots { position: absolute; z-index: 2; bottom: 29px; right: 25px; display: flex; gap: 7px; }
+    .dot { width: 9px; height: 9px; padding: 0; border: 0; border-radius: 50%; background: #ffffff80; cursor: pointer; }
+    .dot.active { background: white; transform: scale(1.25); }
+    .intro { padding: 48px 10%; align-self: center; }
+    .eyebrow { color: var(--accent); font-size: 12px; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; }
+    h1 { margin: 12px 0; font-size: clamp(30px, 4vw, 43px); line-height: 1.08; }
+    .intro p { margin: 0; max-width: 380px; color: var(--muted); line-height: 1.65; }
+    .form-wrap { padding: 38px 8% 48px; }
+    .form-heading { margin-bottom: 24px; }
+    .form-heading h2 { margin: 0 0 7px; font-size: 23px; }
+    .form-heading p { margin: 0; color: var(--muted); font-size: 14px; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 20px; }
+    .field { display: flex; flex-direction: column; gap: 7px; }
+    .field.full { grid-column: 1 / -1; }
+    label { font-size: 13px; font-weight: 700; }
+    label em { color: var(--accent); font-style: normal; }
+    input, select, textarea { width: 100%; padding: 12px 13px; border: 1px solid #cbd3d9; border-radius: 3px; background: white; color: var(--ink); font: inherit; font-size: 14px; outline: none; }
+    input:focus, select:focus, textarea:focus { border-color: #637d8f; box-shadow: 0 0 0 3px #637d8f1a; }
+    input.invalid, select.invalid, textarea.invalid { border-color: var(--accent); }
+    .error { min-height: 14px; color: var(--accent); font-size: 12px; }
+    textarea { min-height: 90px; resize: vertical; }
+    .consent { display: flex; gap: 10px; align-items: flex-start; color: var(--muted); font-size: 13px; line-height: 1.5; }
+    .consent input { width: 16px; height: 16px; margin: 2px 0 0; accent-color: var(--accent); flex: 0 0 auto; }
+    .submit-row { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-top: 20px; }
+    .privacy { max-width: 380px; color: var(--muted); font-size: 11px; line-height: 1.5; }
+    .submit { padding: 14px 25px; border: 0; border-radius: 3px; background: var(--accent); color: white; font-weight: 800; letter-spacing: .04em; cursor: pointer; }
+    .submit:hover { background: #b81823; }
+    .modal { position: fixed; z-index: 5; inset: 0; display: none; align-items: center; justify-content: center; padding: 20px; background: #101820a6; }
+    .modal.open { display: flex; }
+    .modal-card { width: min(520px, 100%); max-height: 85vh; overflow: auto; padding: 28px; background: white; box-shadow: 0 20px 60px #0004; }
+    .modal-card h2 { margin: 0 0 7px; }
+    .modal-card > p { margin: 0 0 18px; color: var(--muted); }
+    .summary { display: grid; grid-template-columns: 130px 1fr; gap: 0; border-top: 1px solid var(--line); }
+    .summary dt, .summary dd { margin: 0; padding: 10px 4px; border-bottom: 1px solid var(--line); overflow-wrap: anywhere; font-size: 14px; }
+    .summary dt { color: var(--muted); font-weight: 700; }
+    .modal-close { margin-top: 20px; padding: 11px 20px; border: 0; background: var(--ink); color: white; cursor: pointer; font-weight: 700; }
+    @media (max-width: 700px) { .page { width: 100%; margin: 0; } .hero { grid-template-columns: 1fr; } .visual, .visual img { min-height: 260px; height: 260px; } .intro { padding: 34px 8%; } .form-wrap { padding: 30px 7% 38px; } }
+    @media (max-width: 520px) { .grid { grid-template-columns: 1fr; } .field.full { grid-column: auto; } .submit-row { align-items: stretch; flex-direction: column; } .submit { width: 100%; } .topbar small { text-align: right; max-width: 130px; } .summary { grid-template-columns: 105px 1fr; } }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="topbar"><div class="brand">NISSAN<span>.</span></div><small>Innovation that excites</small></header>
+    <section class="hero" aria-label="Featured cars">
+      <div class="visual">
+        <img id="carImage" src="https://images.unsplash.com/photo-1614200187524-dc4b892acf16?auto=format&fit=crop&w=1200&q=85" alt="Featured car" />
+        <button class="carousel-btn" id="prev" type="button" aria-label="Previous car">&#8249;</button>
+        <button class="carousel-btn" id="next" type="button" aria-label="Next car">&#8250;</button>
+        <div class="slide-caption"><strong id="carName">Nissan Z</strong><span id="carTag">Made for the drive</span></div>
+        <div class="dots" id="dots" aria-label="Choose a car"></div>
+      </div>
+      <div class="intro"><div class="eyebrow">Your next drive starts here</div><h1>Find your perfect drive.</h1><p>Tell us what you’re looking for and our team will help you explore the right Nissan for your lifestyle.</p></div>
+    </section>
+    <section class="form-wrap">
+      <div class="form-heading"><h2>Request a callback</h2><p>Fields marked <em style="color:#d91f2b">*</em> are required.</p></div>
+      <form id="enquiryForm" novalidate>
+        <div class="grid">
+          <div class="field"><label for="firstName">First name <em>*</em></label><input id="firstName" name="First name" autocomplete="given-name" required minlength="2" /><small class="error"></small></div>
+          <div class="field"><label for="lastName">Last name <em>*</em></label><input id="lastName" name="Last name" autocomplete="family-name" required minlength="2" /><small class="error"></small></div>
+          <div class="field"><label for="email">Email address <em>*</em></label><input id="email" name="Email" type="email" autocomplete="email" required /><small class="error"></small></div>
+          <div class="field"><label for="phone">Phone number <em>*</em></label><input id="phone" name="Phone" type="tel" autocomplete="tel" inputmode="tel" required pattern="[+0-9() .-]{7,20}" /><small class="error"></small></div>
+          <div class="field"><label for="model">Model of interest <em>*</em></label><select id="model" name="Model of interest" required><option value="">Select a model</option><option>Altima</option><option>ARIYA</option><option>LEAF</option><option>Pathfinder</option><option>Rogue</option><option>Sentra</option><option>Versa</option><option>Z</option><option>Not sure yet</option></select><small class="error"></small></div>
+          <div class="field"><label for="purchase">When are you planning to buy?</label><select id="purchase" name="Purchase timeline"><option value="">Select a timeframe</option><option>As soon as possible</option><option>Within 1 month</option><option>Within 3 months</option><option>Just researching</option></select><small class="error"></small></div>
+          <div class="field full"><label for="message">How can we help?</label><textarea id="message" name="Message" placeholder="Add a question or a convenient time to contact you"></textarea><small class="error"></small></div>
+          <div class="field full"><label class="consent"><input id="consent" type="checkbox" required /><span>I agree to be contacted about my enquiry. <em>*</em></span></label><small class="error"></small></div>
+        </div>
+        <div class="submit-row"><div class="privacy">By submitting, you agree that the dealership may use these details to respond to your request. This demo does not send or store your information.</div><button class="submit" type="submit">SUBMIT ENQUIRY</button></div>
+      </form>
+    </section>
+  </main>
+  <div class="modal" id="resultModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-card"><h2 id="modalTitle">Thanks for your enquiry!</h2><p>Here’s a summary of the details you submitted.</p><dl class="summary" id="summary"></dl><button class="modal-close" id="closeModal" type="button">Close</button></div>
+  </div>
+  <script>
+    // Replace these image URLs with your approved vehicle photography if needed.
+    const cars = [
+      { name: "Nissan Z", tag: "Made for the drive", image: "https://images.unsplash.com/photo-1614200187524-dc4b892acf16?auto=format&fit=crop&w=1200&q=85" },
+      { name: "Nissan Rogue", tag: "Room for what moves you", image: "https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?auto=format&fit=crop&w=1200&q=85" },
+      { name: "Nissan Altima", tag: "Take the long way home", image: "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1200&q=85" }
+    ];
+    let activeCar = 0;
+    const carImage = document.getElementById("carImage");
+    const carName = document.getElementById("carName");
+    const carTag = document.getElementById("carTag");
+    const dots = document.getElementById("dots");
+    function showCar(index) {
+      activeCar = (index + cars.length) % cars.length;
+      const car = cars[activeCar];
+      carImage.src = car.image; carImage.alt = car.name; carName.textContent = car.name; carTag.textContent = car.tag;
+      [...dots.children].forEach((dot, i) => { dot.classList.toggle("active", i === activeCar); dot.setAttribute("aria-current", i === activeCar ? "true" : "false"); });
+    }
+    cars.forEach((car, i) => { const dot = document.createElement("button"); dot.type = "button"; dot.className = "dot"; dot.setAttribute("aria-label", `Show ${car.name}`); dot.addEventListener("click", () => showCar(i)); dots.appendChild(dot); });
+    document.getElementById("prev").addEventListener("click", () => showCar(activeCar - 1));
+    document.getElementById("next").addEventListener("click", () => showCar(activeCar + 1));
+    showCar(0);
+
+    const form = document.getElementById("enquiryForm");
+    const modal = document.getElementById("resultModal");
+    function showError(field, message) {
+      const wrapper = field.closest(".field");
+      const output = wrapper.querySelector(".error");
+      output.textContent = message;
+      field.classList.toggle("invalid", Boolean(message));
+      if (field.type === "checkbox") field.setAttribute("aria-invalid", message ? "true" : "false");
+      return !message;
+    }
+    function validateField(field) {
+      let message = "";
+      if (field.required && field.type === "checkbox" && !field.checked) message = "Please provide your consent to continue.";
+      else if (field.required && field.type !== "checkbox" && !field.value.trim()) message = "This field is required.";
+      else if (field.value.trim() && field.type === "email" && !field.validity.valid) message = "Enter a valid email address.";
+      else if (field.value.trim() && field.id === "phone" && !field.validity.valid) message = "Enter a valid phone number.";
+      else if (field.value.trim() && field.minLength > 0 && field.value.trim().length < field.minLength) message = `Enter at least ${field.minLength} characters.`;
+      return showError(field, message);
+    }
+    form.querySelectorAll("input, select, textarea").forEach(field => {
+      field.addEventListener(field.type === "checkbox" || field.tagName === "SELECT" ? "change" : "input", () => validateField(field));
+    });
+    form.addEventListener("submit", event => {
+      event.preventDefault();
+      const fields = [...form.querySelectorAll("input, select, textarea")];
+      const valid = fields.map(validateField).every(Boolean);
+      if (!valid) { form.querySelector(".invalid")?.focus(); return; }
+      const summary = document.getElementById("summary");
+      summary.replaceChildren();
+      const values = new FormData(form);
+      fields.forEach(field => {
+        if (field.type === "checkbox") return;
+        const label = field.name;
+        const value = field.value.trim() || "Not provided";
+        const dt = document.createElement("dt"); dt.textContent = label;
+        const dd = document.createElement("dd"); dd.textContent = value;
+        summary.append(dt, dd);
+      });
+      const consentDt = document.createElement("dt"); consentDt.textContent = "Contact consent";
+      const consentDd = document.createElement("dd"); consentDd.textContent = form.elements.consent.checked ? "Yes" : "No";
+      summary.append(consentDt, consentDd);
+      modal.classList.add("open"); document.getElementById("closeModal").focus();
+    });
+    function closeModal() { modal.classList.remove("open"); document.getElementById("firstName").focus(); }
+    document.getElementById("closeModal").addEventListener("click", closeModal);
+    modal.addEventListener("click", event => { if (event.target === modal) closeModal(); });
+    document.addEventListener("keydown", event => { if (event.key === "Escape" && modal.classList.contains("open")) closeModal(); });
+  </script>
+</body>
+</html>

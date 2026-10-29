@@ -1,4 +1,4 @@
-
+const API_BASE_URL = 'https://sinister-spirit-4q645g7vrq5637776-3000.app.github.dev';
 const cars = [
     {
         name: "Nissan Tekton",
@@ -762,36 +762,34 @@ function initializeForm() {
 
     // Form submission.
 
-    form.addEventListener("submit", function (event) {
+    form.addEventListener('submit', async function (event) {
+  event.preventDefault();
+  if (!validateForm()) {
+    const firstInvalid = form.querySelector('.invalid');
+    if (firstInvalid) firstInvalid.focus();
+    return;
+  }
 
-        event.preventDefault();
-
-        if (!validateForm()) {
-
-            const firstInvalid =
-                form.querySelector(".invalid");
-
-            if (firstInvalid) {
-
-                firstInvalid.focus();
-
-                firstInvalid.scrollIntoView({
-
-                    behavior: "smooth",
-
-                    block: "center"
-
-                });
-
-            }
-
-            return;
-
-        }
-
-        showSummary();
-
+  const button = form.getElementsByClassName('submit-btn')[0];
+  button.disabled = true;
+  try {
+    const payload = Object.fromEntries(new FormData(form).entries());
+    payload.sameAddress = document.getElementById('sameAddress').checked;
+    const response = await fetch(`${API_BASE_URL}/api/test-drive-requests`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
     });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || 'Submission failed');
+    showSummary();
+  } catch (error) {
+    console.error('Form submission failed:', error.message);
+    alert('We could not save your request. Please try again.');
+  } finally {
+    button.disabled = false;
+  }
+});
 
 
     // Update address validation when the checkbox changes.

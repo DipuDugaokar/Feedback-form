@@ -34,9 +34,9 @@ app.post('/api/test-drive-requests', async (req, res) => {
   try {
     const result = await pool.query('INSERT INTO test_drive_requests (vehicle,title,first_name,middle_name,last_name,mobile,email,preferred_date,preferred_time,dealer,address,same_address) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING id', [d.vehicle,d.title,d.firstName,d.middleName,d.lastName,d.mobile,d.email,d.date,d.time,d.dealer,d.sameAddress ? null : d.address,d.sameAddress]);
     return res.status(201).json({ requestId: result.rows[0].id });
-  } catch (_err) {
-    console.error('Submission failed');
-    return res.status(500).json({ error: 'Unable to submit right now.' });
-  }
+  } catch (err) {
+ console.error('Database insert failed:', err.code, err.message);
+ return res.status(500).json({ error: 'Unable to submit right now.' });
+}
 });
 app.listen(process.env.PORT || 3000, () => console.log('API started'));

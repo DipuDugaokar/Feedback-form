@@ -1,4 +1,5 @@
-
+const API_BASE_URL = 'https://sinister-spirit-4q645g7vrq5637776-3000.app.github.dev';
+const DEMO_ENCRYPTION_KEY='h0zyKIs/7q2jwJplVvNiBGp6PdAN42qKMStpQmhwmUs='
 const cars = [
     {
         name: "Nissan Tekton",
@@ -762,36 +763,37 @@ function initializeForm() {
 
     // Form submission.
 
-    form.addEventListener("submit", function (event) {
+    form.addEventListener('submit', async function (event) {
+  event.preventDefault();
+  if (!validateForm()) {
+    const firstInvalid = form.querySelector('.invalid');
+    if (firstInvalid) firstInvalid.focus();
+    return;
+  }
 
-        event.preventDefault();
-
-        if (!validateForm()) {
-
-            const firstInvalid =
-                form.querySelector(".invalid");
-
-            if (firstInvalid) {
-
-                firstInvalid.focus();
-
-                firstInvalid.scrollIntoView({
-
-                    behavior: "smooth",
-
-                    block: "center"
-
-                });
-
-            }
-
-            return;
-
-        }
-
-        showSummary();
-
+  const button = form.getElementsByClassName('submit-btn')[0];
+  button.disabled = true;
+  
+  try {
+    const payload = Object.fromEntries(new FormData(form).entries());
+    payload.sameAddress = document.getElementById('sameAddress').checked;
+    // const encryptedText = CryptoJS.AES.encrypt(JSON.stringify(payload), DEMO_ENCRYPTION_KEY)
+    const encryptedText = CryptoJS.AES.encrypt(JSON.stringify(payload), DEMO_ENCRYPTION_KEY).toString();
+    const response = await fetch(`${API_BASE_URL}/api/test-drive-requests`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ciphertext: encryptedText })
     });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || 'Submission failed');
+    showSummary();
+  } catch (error) {
+    console.error('Form submission failed:', error.message);
+    alert('We could not save your request. Please try again.');
+  } finally {
+    button.disabled = false;
+  }
+});
 
 
     // Update address validation when the checkbox changes.
@@ -838,6 +840,21 @@ function initializeForm() {
         doneButton.addEventListener("click", closeModal);
     }
 
+    //Reset form after clicked done button
+    doneButton.addEventListener('click', resetFormAndClose);
+    function resetFormAndClose() {
+  const form = document.getElementById('testDriveForm');
+  if (!form) return;
+  form.reset();
+  requiredFields.forEach(function (id) {
+    setError(id, '');
+  });
+  selectCar(0);
+  const summary = document.getElementById('summary');
+  if (summary) summary.replaceChildren();
+  closeModal();
+  document.getElementById('firstName').focus();
+}
 
     // Close popup by clicking the background.
 

@@ -833,7 +833,28 @@ function initializeForm() {
     }
 
     if (doneButton) {
-        doneButton.addEventListener("click", closeModal);
+        doneButton.addEventListener("click", function () {
+            alert();
+        closeModal();
+
+        const form = document.getElementById("testDriveForm");
+        if (!form) return;
+
+        form.reset();
+
+        // Clear validation messages and invalid styling.
+        requiredFields.forEach(function (id) {
+        setError(id, "");
+        });
+
+        // Reset the vehicle selection to the first car.
+        selectCar(0);
+        $("#carTrack").trigger("to.owl.carousel", [0, 400, true]);
+
+        // Restore the minimum date in case the form reset changed it.
+        initializeDate();
+        });
+
     }
 
 

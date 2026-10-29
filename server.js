@@ -1,4 +1,5 @@
 require('dotenv').config();
+const CryptoJS = require('crypto-js');
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -26,8 +27,21 @@ const schema = z.object({
   sameAddress: z.boolean().optional().default(false)
 });
 app.get('/health', (_req, res) => res.json({ ok: true }));
+function decryptDemoPayload(body) {
+  const passphrase = process.env.DEMO_ENCRYPTION_KEY;
+  if (!passphrase || typeof body.ciphertext !== 'string') throw new Error('Missing encrypted payload');
+  const clearText = CryptoJS.AES.decrypt(body.ciphertext, passphrase).toString(CryptoJS.enc.Utf8);
+  if (!clearText) throw new Error('Could not decrypt payload');
+  return JSON.parse(clearText);
+}
 app.post('/api/test-drive-requests', async (req, res) => {
-  const parsed = schema.safeParse(req.body);
+  let clearPayload;
+try {
+  clearPayload = decryptDemoPayload(req.body);
+} catch (_err) {
+  return res.status(400).json({ error: 'Invalid encrypted payload.' });
+}
+const parsed = schema.safeParse(clearPayload);
   if (!parsed.success) return res.status(400).json({ error: 'Please check the submitted fields.' });
   const d = parsed.data;
   if (!d.sameAddress && !d.address) return res.status(400).json({ error: 'Address is required.' });

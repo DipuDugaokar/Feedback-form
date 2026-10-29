@@ -1,4 +1,5 @@
 const API_BASE_URL = 'https://sinister-spirit-4q645g7vrq5637776-3000.app.github.dev';
+const DEMO_ENCRYPTION_KEY='h0zyKIs/7q2jwJplVvNiBGp6PdAN42qKMStpQmhwmUs='
 const cars = [
     {
         name: "Nissan Tekton",
@@ -772,13 +773,16 @@ function initializeForm() {
 
   const button = form.getElementsByClassName('submit-btn')[0];
   button.disabled = true;
+  
   try {
     const payload = Object.fromEntries(new FormData(form).entries());
     payload.sameAddress = document.getElementById('sameAddress').checked;
+    // const encryptedText = CryptoJS.AES.encrypt(JSON.stringify(payload), DEMO_ENCRYPTION_KEY)
+    const encryptedText = CryptoJS.AES.encrypt(JSON.stringify(payload), DEMO_ENCRYPTION_KEY).toString();
     const response = await fetch(`${API_BASE_URL}/api/test-drive-requests`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      body: JSON.stringify({ ciphertext: encryptedText })
     });
     const result = await response.json();
     if (!response.ok) throw new Error(result.error || 'Submission failed');
@@ -833,30 +837,24 @@ function initializeForm() {
     }
 
     if (doneButton) {
-        doneButton.addEventListener("click", function () {
-            alert();
-        closeModal();
-
-        const form = document.getElementById("testDriveForm");
-        if (!form) return;
-
-        form.reset();
-
-        // Clear validation messages and invalid styling.
-        requiredFields.forEach(function (id) {
-        setError(id, "");
-        });
-
-        // Reset the vehicle selection to the first car.
-        selectCar(0);
-        $("#carTrack").trigger("to.owl.carousel", [0, 400, true]);
-
-        // Restore the minimum date in case the form reset changed it.
-        initializeDate();
-        });
-
+        doneButton.addEventListener("click", closeModal);
     }
 
+    //Reset form after clicked done button
+    doneButton.addEventListener('click', resetFormAndClose);
+    function resetFormAndClose() {
+  const form = document.getElementById('testDriveForm');
+  if (!form) return;
+  form.reset();
+  requiredFields.forEach(function (id) {
+    setError(id, '');
+  });
+  selectCar(0);
+  const summary = document.getElementById('summary');
+  if (summary) summary.replaceChildren();
+  closeModal();
+  document.getElementById('firstName').focus();
+}
 
     // Close popup by clicking the background.
 
